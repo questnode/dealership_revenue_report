@@ -39,7 +39,7 @@ def process_data(data):
 #      print("Current max_revenue is:\n{}".format(max_revenue))
 
 #    item_sales = item["total_sales"]
-    if item["total_sales"] > max_sales["total_sales"]
+    if item["total_sales"] > max_sales["total_sales"]:
       max_sales = item 
 
     # TODO: also handle max sales
@@ -48,8 +48,10 @@ def process_data(data):
   summary = [
     "The {} generated the most revenue: ${}".format(
       format_car(max_revenue["car"]), max_revenue["revenue"]),
+    "The {} generated the most sales: {}".format(
+      format_car(max_sales["car"]), max_sales["total_sales"]),
   ]
-
+  print(summary)
   return summary
 
 
