@@ -6,6 +6,13 @@ import sys
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
+from email.message import EmailMessage
+import os.path
+import mimetypes
+import smtplib
+import getpass
+import emails
+import reports
 
 def load_data(filename):
   """Loads the contents of filename as a JSON file."""
@@ -80,14 +87,16 @@ def cars_dict_to_table(car_data):
 def main(argv):
   """Process the JSON data and generate a full report out of it."""
   data = load_data("car_sales.json")
-  print(data[1])
+#  print(data[1])
   summary = process_data(data)
   print(summary)
 
 
   # TODO: turn this into a PDF report
 
-  report = SimpleDocTemplate("/home/rayyao/Documents/Projects/Certifications/dealership_revenue_report/reports/cars.pdf")
+
+  report_location = "/home/rayyao/Documents/Projects/Certifications/dealership_revenue_report/reports/cars.pdf"
+  report = SimpleDocTemplate(report_location)
   styles = getSampleStyleSheet()
   report_title = Paragraph("Sales summary for last month", styles["h1"])
 
@@ -115,7 +124,13 @@ def main(argv):
 
 
   # TODO: send the PDF report as an email attachment
+  sender = "automation@example.com"
+  receiver = "{}@example.com".format(os.environ.get('USER'))
+  subject = "Sales summary for last month"
+  body = "/n".join(summary)
 
+  message = emails.generate(sender, receiver, subject, body, report_location)
+  emails.send(message)
 
 if __name__ == "__main__":
   main(sys.argv)
