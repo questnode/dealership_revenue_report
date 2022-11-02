@@ -127,7 +127,7 @@ def main(argv):
   sender = "automation@example.com"
   receiver = "{}@example.com".format(os.environ.get('USER'))
   subject = "Sales summary for last month"
-  body = "/n".join(summary)
+  body = "\n".join(summary)
 
   message = emails.generate(sender, receiver, subject, body, report_location)
   emails.send(message)
