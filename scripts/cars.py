@@ -3,7 +3,9 @@
 import json
 import locale
 import sys
-
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Image
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
 
 def load_data(filename):
   """Loads the contents of filename as a JSON file."""
@@ -25,6 +27,8 @@ def process_data(data):
   """
   max_revenue = {"revenue": 0}
   max_sales = {"total_sales":0}
+  sales_of_years = {}
+
 #  print("The initial max_revenue is:\n{}".format(max_revenue))
 
   for item in data:
@@ -38,20 +42,30 @@ def process_data(data):
       max_revenue = item
 #      print("Current max_revenue is:\n{}".format(max_revenue))
 
-#    item_sales = item["total_sales"]
+
+    # Search for the model with the highest sales
     if item["total_sales"] > max_sales["total_sales"]:
       max_sales = item 
 
-    # TODO: also handle max sales
-    # TODO: also handle most popular car_year
+    # Store number of sales according to years of the car
+    if item["car"]["car_year"] in sales_of_years:
+      sales_of_years[item["car"]["car_year"]] += item["total_sales"]
+    else:
+      sales_of_years[item["car"]["car_year"]] = item["total_sales"]
+
+  # Find the model year with the highest number of sales
+  popular_year = max(sales_of_years, key=sales_of_years.get)
+
 
   summary = [
     "The {} generated the most revenue: ${}".format(
       format_car(max_revenue["car"]), max_revenue["revenue"]),
     "The {} generated the most sales: {}".format(
       format_car(max_sales["car"]), max_sales["total_sales"]),
+    "The most popular year is {} with {} sales.".format(
+      popular_year, sales_of_years[popular_year]),
+
   ]
-  print(summary)
   return summary
 
 
@@ -66,9 +80,39 @@ def cars_dict_to_table(car_data):
 def main(argv):
   """Process the JSON data and generate a full report out of it."""
   data = load_data("car_sales.json")
+  print(data[1])
   summary = process_data(data)
   print(summary)
+
+
   # TODO: turn this into a PDF report
+
+  report = SimpleDocTemplate("/home/rayyao/Documents/Projects/Certifications/dealership_revenue_report/reports/cars.pdf")
+  styles = getSampleStyleSheet()
+  report_title = Paragraph("Sales summary for last month", styles["h1"])
+
+#  table_content = [["ID", "Car", "Price", "Total Sales"]]
+#  for car in data:
+##    print(car["id"])
+##    print(car[0]["id"])
+
+##    table_content.append([car["id"], " ".join(car[car].values()), car["price"]])
+#    carinfo = list(car["car"].values())
+#    thiscar = ""
+#    for info in carinfo:
+#      thiscar = thiscar.strip() + " " + str(info)
+##    print(thiscar)
+#    table_content.append([car["id"], thiscar, car["price"]])
+#  print(table_content)
+
+#  table_data = cars_dict_to_table(data)
+#  print(table_data)
+
+  table_style = [('GRID', (0,0), (-1,-1), 1, colors.black)]
+  report_table = Table(data=cars_dict_to_table(data), style=table_style, hAlign="LEFT")
+
+  report.build([report_title, Paragraph("<br />".join(summary)), report_table])
+
 
   # TODO: send the PDF report as an email attachment
 
